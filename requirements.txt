@@ -1,0 +1,3 @@
+pyrogram # Python library for interacting with the Telegram API.
+tgcrypto # Python library used by Pyrogram for handling Telegram's encryption protocols efficiently
+python-dotenv # allow to load .env veriables 
