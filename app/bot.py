@@ -1,6 +1,8 @@
+import fillter_messages
 from pyrogram import Client
 from dotenv import load_dotenv
 import os
+
 
 load_dotenv()
 
@@ -9,21 +11,56 @@ API_HASH = os.getenv("TELEGRAM_API_HASH")
 
 bot = Client("my_account", api_id=API_ID, api_hash=API_HASH)
 
-# Dialog Type: ChatType.CHANNEL, Chat Name: Abu Ali Express in English, Chat ID: -1001560386984
+GROUP_NAME = "Abu Ali Express in English"
 
-# Start the bot session
+
 with bot:
     print("Successfully connected to Telegram!")
     print("Start session ---->>>")
     
+    target_dialog = None
+    
+    for dialog in bot.get_dialogs():
+        if dialog.chat.title == GROUP_NAME:
+            target_dialog = dialog
+            break
+
+    if target_dialog:
+        dialog_id = target_dialog.chat.id
+        unread_count = target_dialog.unread_messages_count  # Fetch the count of unread messages
+
+        print(f"Fetching unread messages from '{GROUP_NAME}' (Unread Count: {unread_count}) ---->")
+
+        unread_messages = []
+        # Fetch only the last `unread_count` messages from the chat history
+        for message in bot.get_chat_history(dialog_id, limit=min(unread_count,5)):
+            unread_messages.append(message)
+
+
+        print(f"Total unread messages in '{GROUP_NAME}': {len(unread_messages)}")
+        if unread_messages:
+            fillter_messages.pre_proccess(unread_messages)
+            # for message in unread_messages:
+            #     print(f"Message ID: {message.id}, Content: {message.text}")
+
+        else:
+            print(f"No unread messages in '{GROUP_NAME}'.")
+    
+    
+    else:
+        print(f"Could not find the group '{GROUP_NAME}'.")
+
+
+
+
+
 
     # prints all dialogs and their id 
-    print("All chats I have: ")
-    for dialog in bot.get_dialogs():
-        print(f"Dialog Type: {dialog.chat.type}, Chat Name: {dialog.chat.title}, Chat ID: {dialog.chat.id}")
+    # print("All chats I have: ")
+    # for dialog in bot.get_dialogs():
+    #     if dialog.chat.title == "Abu Ali Express in English":
+    #         print(f"Dialog Type: {dialog.chat.type}, Chat Name: {dialog.chat.title}, Chat ID: {dialog.chat.id}")
 
-        if dialog.chat.type in ["group", "supergroup", "Private"]:
-            print(f"Group Name: {dialog.chat.title} | Group ID: {dialog.chat.id}")
 
     # group_id = -4781637743  # test froup id
     # message = "Hello, this is a message from the bot!"
