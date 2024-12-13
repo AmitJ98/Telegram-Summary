@@ -1,4 +1,4 @@
-import fillter_messages
+import summarizer
 from pyrogram import Client
 from dotenv import load_dotenv
 import os
@@ -32,16 +32,15 @@ with bot:
         print(f"Fetching unread messages from '{GROUP_NAME}' (Unread Count: {unread_count}) ---->")
 
         unread_messages = []
-        # Fetch only the last `unread_count` messages from the chat history
-        for message in bot.get_chat_history(dialog_id, limit=min(unread_count,5)):
-            unread_messages.append(message)
+        if unread_count != 0:
+            for message in bot.get_chat_history(dialog_id, limit= unread_count):
+                unread_messages.append(message)
 
+        
+            print(f"Total unread messages in '{GROUP_NAME}': {len(unread_messages)}")
+            if unread_messages:
+                summarizer.summarize_group(unread_messages,GROUP_NAME)
 
-        print(f"Total unread messages in '{GROUP_NAME}': {len(unread_messages)}")
-        if unread_messages:
-            fillter_messages.pre_proccess(unread_messages)
-            # for message in unread_messages:
-            #     print(f"Message ID: {message.id}, Content: {message.text}")
 
         else:
             print(f"No unread messages in '{GROUP_NAME}'.")
@@ -58,8 +57,7 @@ with bot:
     # prints all dialogs and their id 
     # print("All chats I have: ")
     # for dialog in bot.get_dialogs():
-    #     if dialog.chat.title == "Abu Ali Express in English":
-    #         print(f"Dialog Type: {dialog.chat.type}, Chat Name: {dialog.chat.title}, Chat ID: {dialog.chat.id}")
+    #     print(f"Dialog Type: {dialog.chat.type}, Chat Name: {dialog.chat.title}, Chat ID: {dialog.chat.id}")
 
 
     # group_id = -4781637743  # test froup id
