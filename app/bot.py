@@ -35,6 +35,13 @@ with bot:
         if unread_count != 0:
             for message in bot.get_chat_history(dialog_id, limit= unread_count):
                 unread_messages.append(message)
+                # if message.media:
+                #     if message.photo:
+                #         print(f"Image found in Message ID {message.id}")
+                #         file_path = bot.download_media(message)
+                #         print(f"Image downloaded to: {file_path}")
+                #         break
+
 
         
             print(f"Total unread messages in '{GROUP_NAME}': {len(unread_messages)}")
@@ -52,21 +59,3 @@ with bot:
 
 
 
-
-
-    # prints all dialogs and their id 
-    # print("All chats I have: ")
-    # for dialog in bot.get_dialogs():
-    #     print(f"Dialog Type: {dialog.chat.type}, Chat Name: {dialog.chat.title}, Chat ID: {dialog.chat.id}")
-
-
-    # group_id = -4781637743  # test froup id
-    # message = "Hello, this is a message from the bot!"
-
-    # try:
-    #     # Send a message to the group with the specified group ID
-    #     bot.send_message(group_id, message)
-    #     print(f"Message sent to group with ID {group_id}")
-    
-    # except Exception as e:
-    #     print(f"Error sending message: {e}")

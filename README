@@ -1,0 +1,4 @@
+need to do:
+- find a free api for llm for the summary  part
+- pre process the data 
+- extract test messages for testing before deploy
