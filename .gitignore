@@ -4,3 +4,4 @@ Scripts/
 Include/
 pyvenv.cfg
 .env
+app/__pycache__
