@@ -84,7 +84,7 @@ with bot:
 
 
 
-""""if need to fetch media"""
+""""if need to download media"""
 # if message.media:
 #     if message.photo:
 #         print(f"Image found in Message ID {message.id}")
