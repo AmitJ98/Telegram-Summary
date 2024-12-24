@@ -1,24 +1,29 @@
 import json
-from summarizer import summarize_group
-import json
 import re
 
 INVISIBLE_CHARS_PATTERN_RE = r'[\u200b-\u200d\n\r\t]'
+SUMMARY_LENGTH = 0.17 # should be 10 - 25% of the original text
+
+
 
 
 def pre_proccess_test(unread_messages):
-    unread_messages = unread_messages[:10]
     ans = []
+    messages_length = 0
     for m in unread_messages:
         curr_date = m['timestamp']
         curr_text = []
         if m['content']:
             curr_text.append(re.sub(INVISIBLE_CHARS_PATTERN_RE, '', m['content']))
+            messages_length+=len(m['content'].split())
         if m['media_type'] == True:
             curr_text.append(re.sub(INVISIBLE_CHARS_PATTERN_RE, '', m['media_caption'])) 
+            messages_length+=len(m['media_caption'].split())
+
         ans.append(curr_date + ": " + "".join(curr_text) + '\n')
 
-    
+    print(ans)
+    print(messages_length)    
 
 
 

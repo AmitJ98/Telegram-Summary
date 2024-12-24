@@ -1,0 +1,18 @@
+I have a text that I would like you to summarize.
+
+Input:
+
+Text: [Insert the text you want to summarize here]
+Original Text Length: [Insert the number of words or characters in the original text]
+
+Output:
+
+Summary: Summarize the provided text concisely and accurately. You may split the summary into sections as you see fit to improve readability.
+Original text is sparted to dvide diffrent messages, also you provided with date a time of the messages for more info.
+Summary Length: The length of the summary should be approximately 0.17 times the original text length.
+Please ensure the summary maintains the core meaning and key information of the original text while adhering to the specified length constraint.
+In addition if part of the text is refering to a video or image that is not included please avoid it.
+
+
+
+

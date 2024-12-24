@@ -1,9 +1,4 @@
 need to do:
-- find a free api for LLM for the summary  part
-- search best prompt to send to LLM: things to consider: 
-                                            - the len of the input text to detemine the len of the output
-                                            - 
-
-                                            
+- tune prompt                               
 - pre process the data 
-- extract test messages for testing before deploy
+- find a free api for LLM for the summary  part
