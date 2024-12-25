@@ -72,7 +72,7 @@ with bot:
 
             print(f"Total of valid unread messages in '{GROUP_NAME}': {len(unread_messages)}")
             if unread_messages:
-                summarizer.summarize_group(unread_messages,GROUP_NAME)
+                summary = summarizer.summarize_group(unread_messages)
 
 
         else:
