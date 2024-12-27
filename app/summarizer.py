@@ -39,5 +39,6 @@ def summarize_group(unread_messages:list):
     unread_messages = unread_messages[::-1]
     proccessed_text,text_length = pre_proccess_messages(unread_messages)
     summary = summarize_messages(proccessed_text,text_length)
+    print("done")
     return summary
         
