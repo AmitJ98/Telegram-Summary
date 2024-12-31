@@ -29,9 +29,27 @@ def pre_proccess_messages(unread_messages):
     return proccessed_text,text_length
 
 
+def generate_prompt_for_llm(processed_text, text_length):
+    prompt = f"""I have a text that I would like you to summarize.
+
+Input: 
+Text: {processed_text}
+Original Text Length: {text_length}
+
+Output:
+Summary: Summarize the provided text concisely and accurately. You may split the summary into sections as you see fit to improve readability.
+The original text is separated by "<START>" and "<END>" to divide different messages. You are also provided with the date and time of the messages for additional context.
+Summary Length: The length of the summary should be approximately 0.17 times the original text length.
+Please ensure the summary maintains the core meaning and key information of the original text while adhering to the specified length constraint.
+In addition, if part of the text refers to a video or image that is not included, please avoid mentioning it."""
+
+    return prompt
+
+
 #this function will get the pre procced text and will send the text to the openai api to get the summary
-def summarize_messages(preprocessed_text,text_length):
-    pass
+def summarize_messages(processed_text,text_length):
+    prompt = generate_prompt_for_llm(processed_text,text_length)
+
 
 
 

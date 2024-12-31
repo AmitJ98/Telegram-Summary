@@ -1,5 +1,15 @@
-need to do:
-- build the scedular
-- tune prompt                               
-- clean the data, in a broad way and not spesific
-- find a free api for LLM for the summary  part
+To Do:
+    InterFace Bot:
+        - create the bot
+        - stepup for basic use
+        - choose and deploy a postgress database
+        - log myself in
+
+    Summarizer Bot:
+        - tune prompt
+        - clean the data, in a broad way and not spesific
+        - find a free api for LLM for the summary
+
+    Other:
+        - build the scedular
+        - decide on which services to use in aws

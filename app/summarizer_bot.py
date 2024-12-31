@@ -56,8 +56,8 @@ def fetch_unread_messages(bot, group_name):
                 continue
             unread_messages.append(message)
 
-        bot.read_chat_history(dialog_id)
-        print(f"Marked all messages as read in '{group_name}'.") # need to add option for mark or no
+        # bot.read_chat_history(dialog_id) # need to add option for mark or no
+        # print(f"Marked all messages as read in '{group_name}'.") 
     else:
         print(f"No unread messages in '{group_name}'.")
 
@@ -79,7 +79,6 @@ def main():
 
             # Summarize the messages
             summary = summarizer.summarize_group(unread_messages)
-
 
 
 if __name__ == "__main__":
