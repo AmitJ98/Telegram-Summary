@@ -5,9 +5,9 @@ import os
 import json
 
 load_dotenv()
-API_ID = int(os.getenv("TELEGRAM_API_ID"))
-API_HASH = os.getenv("TELEGRAM_API_HASH")
-bot = Client("my_account", api_id=API_ID, api_hash=API_HASH)
+API_ID = int(os.getenv("MY_TELEGRAM_API_ID"))
+API_HASH = os.getenv("MY_TELEGRAM_API_HASH")
+user_bot = Client("my_account", api_id=API_ID, api_hash=API_HASH)
 
 
 GROUP_NAME = "Abu Ali Express in English"
@@ -33,9 +33,10 @@ def save_messages_to_json(messages, file_name):
     print(f"Messages saved to '{file_name}'.")
 
 
-def fetch_unread_messages(bot, group_name):
-    target_dialog = None
+def fetch_unread_messages(bot:Client, group_name:str):
+    """Fetch unread messages from a specific group."""
 
+    target_dialog = None
     for dialog in bot.get_dialogs():
         if dialog.chat.title == group_name:
             target_dialog = dialog
@@ -65,11 +66,11 @@ def fetch_unread_messages(bot, group_name):
 
 
 def main():
-    with bot:
+    with user_bot:
         print("Successfully connected to Telegram!")
         print("Start session ---->>>")
         
-        dialog_id, unread_messages = fetch_unread_messages(bot, GROUP_NAME)
+        dialog_id, unread_messages = fetch_unread_messages(user_bot, GROUP_NAME)
 
         if unread_messages:
             print(f"Total of valid unread messages in '{GROUP_NAME}': {len(unread_messages)}")

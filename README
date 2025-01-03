@@ -1,15 +1,23 @@
 To Do:
     InterFace Bot:
-        - create the bot
-        - stepup for basic use
-        - choose and deploy a postgress database
-        - log myself in
+        - create the basic commands
 
     Summarizer Bot:
+        - fillter groups
         - tune prompt
         - clean the data, in a broad way and not spesific
         - find a free api for LLM for the summary
 
+    Data Base:
+        - create the data base
+        - create the tables
+        - create the queries
+        - log myself in the data base
+
     Other:
+        - add typing and documantation
         - build the scedular
         - decide on which services to use in aws
+
+    Things That Need To Undersrand:
+        - await and async

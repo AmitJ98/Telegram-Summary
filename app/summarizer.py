@@ -11,7 +11,7 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
-def pre_proccess_messages(unread_messages):
+def pre_proccess_messages(unread_messages:list):
     proccessed_text = []
     text_length = 0
     for message in unread_messages:
@@ -29,7 +29,7 @@ def pre_proccess_messages(unread_messages):
     return proccessed_text,text_length
 
 
-def generate_prompt_for_llm(processed_text, text_length):
+def generate_prompt_for_llm(processed_text:str, text_length:int):
     prompt = f"""I have a text that I would like you to summarize.
 
 Input: 
@@ -47,7 +47,7 @@ In addition, if part of the text refers to a video or image that is not included
 
 
 #this function will get the pre procced text and will send the text to the openai api to get the summary
-def summarize_messages(processed_text,text_length):
+def summarize_messages(processed_text:str,text_length:int):
     prompt = generate_prompt_for_llm(processed_text,text_length)
 
 
