@@ -1,8 +1,6 @@
 app/my_account.session
 app/interface_bot.session
-Lib/
-Scripts/
-Include/
-pyvenv.cfg
 .env
 app/__pycache__
+telegram_summary_venv
+app.log
