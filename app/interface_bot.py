@@ -3,7 +3,7 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import os
 from dotenv import load_dotenv
-from database_management import insert_new_user, fetch_user_data, delete_user, update_chat_list, update_time
+from database_management.users_data_table import insert_new_user, fetch_user_data, delete_user, update_chat_list, update_time
 
 
 
@@ -40,22 +40,23 @@ async def handle_api_key_and_hash(update: Update, context: ContextTypes.DEFAULT_
     
     message_text = update.message.text
     splited_message = message_text.split(", ")
-    
+    print(update.message.from_user.id,print(type(update.message.from_user.id)))
     if len(splited_message) != 2:
         await update.message.reply_text("Invalid input. Please follow the format and try again.")
         return
 
     api_id, api_hash = splited_message
     user_info = await verify_api_key_and_hash(api_id, api_hash, update.message.from_user.id)
+    print(user_info.id,type(user_info.id))
     if user_info:
-        pass
-        #
-        #   insert the user info into the database
-        #
-        await update.message.reply_text(f"Successfully registered! Your user ID: {user_info.id}")
-        # 
-        # need to delete the message of user where he sends me his keys
-        #
+        is_inserted = insert_new_user(user_info.id, api_id, api_hash, [])
+        if is_inserted:
+            await update.message.reply_text(f"Successfully registered! Your user ID: {user_info.id}")
+            # 
+            # need to delete the message of user where he sends me his keys
+            #
+        else:
+            await update.message.reply_text("Failed to register you. Please try again later.")
         return
 
     else:

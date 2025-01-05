@@ -1,6 +1,8 @@
-app/my_account.session
-app/interface_bot.session
-.env
-app/__pycache__
 telegram_summary_venv
 app.log
+app/my_account.session
+app/interface_bot.session
+app/__pycache__
+app/user_bot.session
+app/database_management/__pycache__
+.env

@@ -13,7 +13,7 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 
-
+"""need check if all the functions need to be async or not"""
 
 #need to change it to global time timestamp and add typing of timestamp
 def connect_to_db():
@@ -41,9 +41,9 @@ def insert_new_user(id: int, api_key: str, api_hash: str, chats_to_summarize: li
     connection_to_database = connect_to_db()
     if connection_to_database is None:
         return False
-
+    id = str(id)
     query = """
-    INSERT INTO users_data (id, api_key, api_hash, chats, time)
+    INSERT INTO users_data (user_id, api_id, api_hash, chats_to_summarize, time_to_summarize)
     VALUES (%s, %s, %s, %s, %s);
     """
     try:
@@ -72,10 +72,11 @@ def fetch_user_data(id: int):
     if connection_to_database is None:
         return None
     
+    id = str(id)
     query = """
     SELECT *
     FROM users_data
-    WHERE id = %s;
+    WHERE user_id = %s;
     """
     try:
         cursor = connection_to_database.cursor()
@@ -102,9 +103,10 @@ def delete_user(id: int):
     if connection_to_database is None:
         return False
     
+    id = str(id)
     query = """
     DELETE FROM users_data
-    WHERE id = %s;
+    WHERE user_id = %s;
     """
     try:
         cursor = connection_to_database.cursor()
@@ -130,10 +132,11 @@ def update_chat_list(id: int, new_chats: list[str]):
     if connection_to_database is None:
         return False
 
+    id = str(id)
     query = """
     UPDATE users_data
-    SET chats = %s
-    WHERE id = %s;
+    SET chats_to_summarize = %s
+    WHERE user_id = %s;
     """
     try:
         cursor = connection_to_database.cursor()
@@ -159,10 +162,11 @@ def update_time(id: int, new_time):
     if connection_to_database is None:
         return False
 
+    id = str(id)
     query = """
     UPDATE users_data
-    SET time = %s
-    WHERE id = %s;
+    SET time_to_summarize = %s
+    WHERE user_id = %s;
     """
     try:
         cursor = connection_to_database.cursor()
