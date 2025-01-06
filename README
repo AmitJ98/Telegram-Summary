@@ -1,4 +1,14 @@
 To Do:
+
+    Important:
+        1. Data Base:
+            - modify all functions to use the encrypt utils functions
+        2. InterFace Bot:
+            - how to check if the user allready signed up
+            - how to check if user is not sign up and try to use the bot
+            - make it more user friendly
+
+====================================================================================================
     InterFace Bot:
         - how to check if the user allready signed up
         - how to check if user is not sign up and try to use the bot
@@ -15,7 +25,6 @@ To Do:
         - modify all functions to use the encrypt utils functions
         
     Other:
-        - add typing and documantation
         - build the scedular that will activate the summarizer bot
         - decide on which services to use in aws
         - mybe need to build a warper server that will handle the schedule and the interface bot
