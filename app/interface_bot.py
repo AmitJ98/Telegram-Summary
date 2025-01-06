@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from database_management.users_data_table import insert_new_user, fetch_user_data, delete_user, update_chat_list, update_time
 
 
-
 load_dotenv()
 INTERFACE_BOT_API_KEY = os.getenv("INTERFACE_BOT_API_KEY")
 

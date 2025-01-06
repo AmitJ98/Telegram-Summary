@@ -3,6 +3,7 @@ from psycopg2 import sql
 from datetime import datetime
 import os
 from dotenv import load_dotenv
+from database_management.encrypt_utils import encrypt_data, decrypt_data 
 
 load_dotenv()
 
@@ -47,13 +48,13 @@ def insert_new_user(id: int, api_key: str, api_hash: str, chats_to_summarize: li
     VALUES (%s, %s, %s, %s, %s);
     """
     try:
+        encrypt_api_key = encrypt_data(api_key)
+        encrypt_api_hash = encrypt_data(api_hash)
         cursor = connection_to_database.cursor()
-        cursor.execute(query, (id, api_key, api_hash, chats_to_summarize, time_to_summarize))
+        cursor.execute(query, (id, encrypt_api_key, encrypt_api_hash, chats_to_summarize, time_to_summarize))
         connection_to_database.commit()
         print(f"[SUCCESS] New user inserted successfully! Details:\n"
               f"  ID: {id}\n"
-              f"  API Key: {api_key}\n"
-              f"  API Hash: {api_hash}\n"
               f"  Chats: {chats_to_summarize}\n"
               f"  Timestamp: {time_to_summarize if time_to_summarize else 'Default (NOW())'}")
         return True

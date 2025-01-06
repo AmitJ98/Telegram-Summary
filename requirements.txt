@@ -4,3 +4,4 @@ python-dotenv # allow to load .env veriables
 openai 
 python-telegram-bot # Python library for interacting with the Telegram API, used for the interface-bot.
 psycopg2 # PostgreSQL database adapter for Python
+cryptography # used for encrypting and dycrypting the API keys and Hashs in the database
