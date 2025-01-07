@@ -8,18 +8,17 @@ from database_management.encrypt_utils import encrypt_data, decrypt_data
 load_dotenv()
 
 
-DB_NAME = os.getenv("DB_NAME")
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-
 """need check if all the functions need to be async or not"""
 
 #need to change it to global time timestamp and add typing of timestamp
 def connect_to_db():
     """Connect to the database and return the connection object."""
     try:
+        DB_NAME = os.getenv("DB_NAME")
+        DB_USER = os.getenv("DB_USER")
+        DB_PASSWORD = os.getenv("DB_PASSWORD")
+        DB_HOST = os.getenv("DB_HOST")
+        DB_PORT = os.getenv("DB_PORT")
         connection = psycopg2.connect(
             dbname=DB_NAME,
             user=DB_USER,
@@ -63,29 +62,46 @@ def insert_new_user(id: int, api_key: str, api_hash: str, chats_to_summarize: li
         print(f"[ERROR] Failed to insert user ID {id}. Reason: {e}")
         connection_to_database.rollback()
         return False
+    
+    finally:
+        connection_to_database.close()
 
 
 def fetch_user_data(id: int):
-    """Fetch a user from the database, from the users table.
-       Return the user if the user was fetched successfully, None otherwise."""
-
+    """Fetch a user from the database, decrypt api_id and api_hash, and return the user.
+       Returns None if the user was not found or an error occurred."""
+    
     connection_to_database = connect_to_db()
     if connection_to_database is None:
         return None
-    
+
     id = str(id)
     query = """
-    SELECT *
+    SELECT user_id, api_id, api_hash, chats_to_summarize, time_to_summarize
     FROM users_data
     WHERE user_id = %s;
     """
+    
     try:
         cursor = connection_to_database.cursor()
         cursor.execute(query, (id,))
         user = cursor.fetchone()
+        
         if user:
-            print(f"[SUCCESS] User fetched successfully! ID: {user[0]}\n")
-            return user
+            decrypted_api_id = decrypt_data(user[1])  
+            decrypted_api_hash = decrypt_data(user[2])  
+            
+            # Construct and return the decrypted user object
+            decrypted_user = {
+                "user_id": user[0],  
+                "api_id": decrypted_api_id,  
+                "api_hash": decrypted_api_hash,  
+                "chats_to_summarize": user[3],  
+                "time_to_summarize": user[4],  
+            }
+            
+            print(f"[SUCCESS] User fetched and decrypted successfully! ID: {user[0]}\n")
+            return decrypted_user
         
         else:
             print(f"[INFO] No user found with ID: {id}.")
@@ -94,6 +110,9 @@ def fetch_user_data(id: int):
     except Exception as e:
         print(f"[ERROR] Failed to fetch user with ID {id}. Reason: {e}")
         return None
+    
+    finally:
+        connection_to_database.close()
 
 
 def delete_user(id: int):
@@ -123,6 +142,9 @@ def delete_user(id: int):
         print(f"[ERROR] Failed to delete user ID {id}. Reason: {e}")
         connection_to_database.rollback()
         return False
+    
+    finally:
+        connection_to_database.close()
 
 
 def update_chat_list(id: int, new_chats: list[str]):
@@ -153,6 +175,9 @@ def update_chat_list(id: int, new_chats: list[str]):
         print(f"[ERROR] Failed to update chat list for user ID {id}. Reason: {e}")
         connection_to_database.rollback()
         return False
+    
+    finally:
+        connection_to_database.close()
 
 
 def update_time(id: int, new_time):
@@ -184,5 +209,40 @@ def update_time(id: int, new_time):
         connection_to_database.rollback()
         return False
     
+    finally:
+        connection_to_database.close()
+
+
+def check_user_existence(id: int):
+    """Check if a user exists in the database.
+       Return True if the user exists, False otherwise."""
+    
+    connection_to_database = connect_to_db()
+    if connection_to_database is None:
+        return False
+
+    id = str(id)
+    query = """
+    SELECT user_id
+    FROM users_data
+    WHERE user_id = %s;
+    """
+    try:
+        cursor = connection_to_database.cursor()
+        cursor.execute(query, (id,))
+        user = cursor.fetchone()
+        if user:
+            print(f"[INFO] User ID {id} exists in the database.")
+            return True
+        else:
+            print(f"[INFO] User ID {id} does not exist in the database.")
+            return False
+        
+    except Exception as e:
+        print(f"[ERROR] Failed to check user existence for ID {id}. Reason: {e}")
+        return False
+    
+    finally:
+        connection_to_database.close()
 
 
