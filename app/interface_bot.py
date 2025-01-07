@@ -4,6 +4,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 import os
 from dotenv import load_dotenv
 from database_management.users_data_table import insert_new_user, fetch_user_data, delete_user, update_chat_list, update_time
+from database_management.users_data_table import check_user_existence
 
 
 load_dotenv()
@@ -11,6 +12,40 @@ INTERFACE_BOT_API_KEY = os.getenv("INTERFACE_BOT_API_KEY")
 
 # Create the Application object
 interface_bot = Application.builder().token(INTERFACE_BOT_API_KEY).build()
+
+
+async def is_user_registered(user_id: int):
+    exsit = check_user_existence(user_id)
+    return exsit
+
+
+def allready_registered(func):
+    """Decorator Check if the user is registered, if not send a message to register."""
+    
+    async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        user_id = update.message.from_user.id
+        if await is_user_registered(user_id):
+            await update.message.reply_text("You are already registered.")
+            return
+        else:
+            return await func(update, context)
+        
+    return wrapper
+
+
+def rquiered_registration(func):
+    """Decorator Check if the user is registered, if not send a message to register."""
+    
+    async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        user_id = update.message.from_user.id
+        if await is_user_registered(user_id):
+            return await func(update, context)
+        else:
+            await update.message.reply_text(
+                "You are not registered for this service. Please register using the /register command.")
+            return
+        
+    return wrapper
 
 
 async def verify_api_key_and_hash(api_key: str, api_hash: str, user_id: int):
@@ -69,13 +104,14 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(
         "Welcome to the Telegram Chat Summarizion Bot\n"
-        "/settings - To view and update your settings\n"
+        "Use /Settings - To view and update your settings\n"
         "Use /Register to register new account\n"
-        "Use /help to see the available commands\n."
+        "Use /Help to see the available commands\n."
     )
 
 
 # /register command handler
+@allready_registered
 async def register_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """explain how to register with the bot."""
 
@@ -108,18 +144,18 @@ async def register_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "Here is a list of available commands:\n"
-        "/start - To start interacting with the bot\n"
-        "/settings - To view and update your settings\n"
-        "/help - To see the list of available commands\n"
+        "/Start - To start interacting with the bot\n"
+        "/Settings - To view and update your settings\n"
+        "/Help - To see the list of available commands\n"
     )
 
 
 
 
 # Add command handlers to the application
-interface_bot.add_handler(CommandHandler("start", start_command))
-interface_bot.add_handler(CommandHandler("help", help_command))
-interface_bot.add_handler(CommandHandler("register", register_command)) 
+interface_bot.add_handler(CommandHandler("Start", start_command))
+interface_bot.add_handler(CommandHandler("Help", help_command))
+interface_bot.add_handler(CommandHandler("Register", register_command)) 
 
 # Add message handler to the application
 interface_bot.add_handler(MessageHandler(filters.TEXT, handle_api_key_and_hash))
