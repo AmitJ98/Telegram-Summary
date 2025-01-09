@@ -11,14 +11,14 @@ def get_key() -> bytes:
 
     ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY")
     if not ENCRYPTION_KEY:
-        print("[ERROR] The encryption key is missing. Please set it in the .env file.")
+        print("[ENCRYITION ERROR] The encryption key is missing. Please set it in the .env file.")
         return None
     return ENCRYPTION_KEY.encode()
 
 
 def encrypt_data(data: str) -> bytes:
     """Encrypt the data using the encryption key"""
-
+    
     byte_key = get_key()
     cipher_suite = Fernet(byte_key)
     return cipher_suite.encrypt(data.encode())

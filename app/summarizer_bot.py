@@ -1,20 +1,15 @@
 import summarizer
 from pyrogram import Client
-from dotenv import load_dotenv
-import os
+from database_management.users_data_table import fetch_user_data
 import json
-
-load_dotenv()
-API_ID = int(os.getenv("MY_TELEGRAM_API_ID"))
-API_HASH = os.getenv("MY_TELEGRAM_API_HASH")
-user_bot = Client("my_account", api_id=API_ID, api_hash=API_HASH)
+import re
 
 
+####################   TESTING  ###############################################
+################################################################################
 GROUP_NAME = "Abu Ali Express in English"
 
-
-
-def save_messages_to_json(messages, file_name):
+def save_messages_to_json_for_testing(messages, file_name):
     """Save messages to a JSON file for testing or debugging."""
     processed_messages = [
         {
@@ -32,8 +27,60 @@ def save_messages_to_json(messages, file_name):
         json.dump(processed_messages, f, ensure_ascii=False, indent=4)
     print(f"Messages saved to '{file_name}'.")
 
+################################################################################
 
-def fetch_unread_messages(bot:Client, group_name:str):
+def create_user_bot(user_id:int) -> Client:
+    """Create a user bot and return it."""
+
+    user = fetch_user_data(user_id)
+    if user:
+        user_bot = Client(name = "test", api_id=user["api_id"], api_hash=user["api_hash"])
+
+        if user_bot:
+            print(f"[USER BOT SUCCESS] User bot created successfully for user ID {user_id}.")
+            return user_bot
+        
+        else:
+            print(f"[USER BOT ERROR] Failed to create user bot for user ID {user_id}.")
+            return None
+    else:
+        return None
+
+
+def check_valid_chat_name_for_summarization(group_name:str) -> bool:
+    """Check if the group name is valid for summarization.
+        Matches only English letters (uppercase and lowercase), digits, and common symbols."""
+
+    pattern = r'^[a-zA-Z0-9!@#$%^&*()_\-+=\[\]|\\:"\'<>,.?/~` ]*$'
+    return bool(re.match(pattern, group_name))
+
+
+async def scan_chats_for_summarization(user_id: int) -> list[str]:
+    """Scan all chats/groups of the user and return only those with valid names."""
+
+    user_bot = create_user_bot(user_id)
+    if not user_bot:
+        return []
+
+    valid_chats = []
+    try:
+        await user_bot.start()  
+        async for dialog in user_bot.get_dialogs():
+            if dialog.chat.title and check_valid_chat_name_for_summarization(dialog.chat.title):
+                valid_chats.append(dialog.chat.title)
+        
+        print(valid_chats)
+        return valid_chats
+
+    except Exception as e:
+        print(f"[USER BOT ERROR] Failed to scan chats for user ID {user_id}. Reason: {e}")
+        return []
+
+    finally:
+        await user_bot.stop() 
+
+
+def fetch_unread_messages_from_chat(bot:Client, group_name:str):
     """Fetch unread messages from a specific group."""
 
     target_dialog = None
@@ -65,22 +112,3 @@ def fetch_unread_messages(bot:Client, group_name:str):
     return dialog_id, unread_messages    
 
 
-def main():
-    with user_bot:
-        print("Successfully connected to Telegram!")
-        print("Start session ---->>>")
-        
-        dialog_id, unread_messages = fetch_unread_messages(user_bot, GROUP_NAME)
-
-        if unread_messages:
-            print(f"Total of valid unread messages in '{GROUP_NAME}': {len(unread_messages)}")
-
-            # Save messages for testing/debugging
-            # save_messages_to_json(unread_messages, 'unread_messages.json')
-
-            # Summarize the messages
-            summary = summarizer.summarize_group(unread_messages)
-
-
-if __name__ == "__main__":
-    main()

@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 from database_management.users_data_table import insert_new_user, fetch_user_data, delete_user, update_chat_list, update_time
 from database_management.users_data_table import check_user_existence
+from summarizer_bot import scan_chats_for_summarization
 
 
 load_dotenv()
@@ -140,6 +141,11 @@ async def register_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(guide_text, parse_mode="Markdown", disable_web_page_preview=True)
 
 
+async def scan_chats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.message.from_user.id
+    await scan_chats_for_summarization(user_id)
+
+
 # /help command handler
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
@@ -147,6 +153,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "/Start - To start interacting with the bot\n"
         "/Settings - To view and update your settings\n"
         "/Help - To see the list of available commands\n"
+        "/Scan - To scan all your chats for summarization\n"
     )
 
 
@@ -155,6 +162,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # Add command handlers to the application
 interface_bot.add_handler(CommandHandler("Start", start_command))
 interface_bot.add_handler(CommandHandler("Help", help_command))
+interface_bot.add_handler(CommandHandler("Scan", scan_chats_command))
 interface_bot.add_handler(CommandHandler("Register", register_command)) 
 
 # Add message handler to the application
