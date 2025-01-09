@@ -3,8 +3,9 @@ from pyrogram import Client
 from database_management.users_data_table import fetch_user_data
 import json
 import re
+import os
 
-
+session_folder = "sessions"
 ####################   TESTING  ###############################################
 ################################################################################
 GROUP_NAME = "Abu Ali Express in English"
@@ -34,7 +35,10 @@ def create_user_bot(user_id:int) -> Client:
 
     user = fetch_user_data(user_id)
     if user:
-        user_bot = Client(name = "test", api_id=user["api_id"], api_hash=user["api_hash"])
+        session_folder = "sessions"
+        os.makedirs(session_folder, exist_ok=True) 
+        str_user_id = str(user_id)
+        user_bot = Client(name = str_user_id, api_id=user["api_id"], api_hash=user["api_hash"], workdir=session_folder)
 
         if user_bot:
             print(f"[USER BOT SUCCESS] User bot created successfully for user ID {user_id}.")

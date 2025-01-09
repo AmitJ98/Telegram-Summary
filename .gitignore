@@ -6,3 +6,4 @@ app/__pycache__
 app/user_bot.session
 app/database_management/__pycache__
 .env
+sessions
