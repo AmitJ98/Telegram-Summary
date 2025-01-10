@@ -1,16 +1,19 @@
-I have a text that I would like you to summarize.
+Task:
+Generate a concise and accurate summary of the provided text.
+ The original text consists of messages separated by <START> and <END>, along with their respective date and time for context.
 
-Input: 
+
+Input:
 Text: {processed_text}
 Original Text Length: {text_length}
 
+
+Requirements:
+
+1. Clarity and Accuracy: Maintain the core meaning and key information of the original messages.
+2. Length Constraint: Ensure the summary length is approximately 17% of the original text length.
+3. Readability: Structure the summary into sections if it improves clarity or flow.
+4. Exclusions: Do not include references to videos or images that are not provided in the text.
+
 Output:
-Summary: Summarize the provided text concisely and accurately. You may split the summary into sections as you see fit to improve readability.
-The original text is separated by "<START>" and "<END>" to divide different messages. You are also provided with the date and time of the messages for additional context.
-Summary Length: The length of the summary should be approximately 0.17 times the original text length.
-Please ensure the summary maintains the core meaning and key information of the original text while adhering to the specified length constraint.
-In addition, if part of the text refers to a video or image that is not included, please avoid mentioning it."""
-
-
-
-
+[Your summary here]

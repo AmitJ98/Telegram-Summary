@@ -1,11 +1,11 @@
 from pyrogram import Client
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 import os
 from dotenv import load_dotenv
 from database_management.users_data_table import insert_new_user, fetch_user_data, delete_user, update_chat_list, update_time
 from database_management.users_data_table import check_user_existence
-from summarizer_bot import scan_chats_for_summarization
+from user_bot import scan_chats_for_summarization
 
 
 load_dotenv()
@@ -140,11 +140,70 @@ async def register_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(guide_text, parse_mode="Markdown", disable_web_page_preview=True)
 
-
+###############################work on this function############################################
 async def scan_chats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
-    await scan_chats_for_summarization(user_id)
+    valid_groups = await scan_chats_for_summarization(user_id)
 
+    if not valid_groups:
+        await update.message.reply_text("No valid chats found to scan.")
+        return
+    
+
+    # Create buttons for each group
+    keyboard = [
+        [InlineKeyboardButton(group, callback_data=f"select_{group}")]
+        for group in valid_groups
+    ]
+    keyboard.append([InlineKeyboardButton("Confirm Selection", callback_data="confirm_selection")])
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    await update.message.reply_text(
+        "Select the groups you want to summarize (max 5):",
+        reply_markup=reply_markup
+    )
+
+
+async def handle_group_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle inline keyboard button clicks."""
+    query = update.callback_query
+    await query.answer()  
+
+    callback_data = query.data
+    selected_groups = context.user_data.get("selected_groups", [])
+    valid_groups = context.user_data.get("valid_groups", [])
+
+    if callback_data.startswith("select_"):
+        group = callback_data.replace("select_", "")
+
+        if group in valid_groups:
+            if group in selected_groups:
+                selected_groups.remove(group)  
+                await query.edit_message_text(
+                    f"Unselected: {group}\n\nCurrent Selection: {', '.join(selected_groups)}"
+                )
+            elif len(selected_groups) < 5:
+                selected_groups.append(group)  # Add to selection
+                await query.edit_message_text(
+                    f"Selected: {group}\n\nCurrent Selection: {', '.join(selected_groups)}"
+                )
+            else:
+                await query.answer("You can only select up to 5 groups.", show_alert=True)
+
+        context.user_data["selected_groups"] = selected_groups
+
+    elif callback_data == "confirm_selection":
+        # Finalize the selection
+        if not selected_groups:
+            await query.answer("You must select at least one group.", show_alert=True)
+            return
+
+
+        await query.edit_message_text(
+            f"Your selection has been saved:\n{', '.join(selected_groups)}"
+        )
+####################################################################################################
 
 # /help command handler
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -159,6 +218,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 
+
 # Add command handlers to the application
 interface_bot.add_handler(CommandHandler("Start", start_command))
 interface_bot.add_handler(CommandHandler("Help", help_command))
@@ -167,6 +227,8 @@ interface_bot.add_handler(CommandHandler("Register", register_command))
 
 # Add message handler to the application
 interface_bot.add_handler(MessageHandler(filters.TEXT, handle_api_key_and_hash))
+
+interface_bot.add_handler(CallbackQueryHandler(handle_group_selection))
 
 
 # Start the bot

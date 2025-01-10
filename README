@@ -1,23 +1,15 @@
 To Do:
-    Important:
-        1. InterFace Bot:
-            - make it more user friendly
-        2. Summarizer Bot:
-            - connect to the database
-            - fillter groups
-            
-
-
 ====================================================================================================
     InterFace Bot:
         - make it more user friendly
 
-    Summarizer Bot:
+    User Bot:
         - connect to the database
-        - fillter groups
-        - tune prompt
+
+
+    Summarizer:
         - clean the data, in a broad way and not spesific
-        - find a free api for LLM for the summary (openai, gemini, Cohere, Hugging Face Transformers, Llama )
+        - tune prompt
 
     Data Base:
         

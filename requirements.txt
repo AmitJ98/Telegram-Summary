@@ -1,7 +1,7 @@
 pyrogram # Python library for interacting with the Telegram API, used for the user-bot.
 tgcrypto # Python library used by Pyrogram for handling Telegram's encryption protocols efficiently
 python-dotenv # allow to load .env veriables 
-openai 
 python-telegram-bot # Python library for interacting with the Telegram API, used for the interface-bot.
 psycopg2 # PostgreSQL database adapter for Python
 cryptography # used for encrypting and dycrypting the API keys and Hashs in the database
+cohere # the llm for generating the summary of the text
