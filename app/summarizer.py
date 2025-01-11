@@ -4,13 +4,25 @@ import os
 from dotenv import load_dotenv
 
 INVISIBLE_CHARS = r'[\u200b-\u200d\n\r\t]'
-SUMMARY_LENGTH = 0.17 # should be 10 - 25% of the original text
-
+SUMMARY_LENGTH = 0.13 # should be 10 - 25% of the original text
 
 load_dotenv()
 
-COHERE_API_KEY = os.getenv('COHERE_API_KEY')
-cohere_client = cohere.Client(COHERE_API_KEY)
+
+
+def connect_to_cohere_llm() -> cohere.Client:
+    """Connect to the Cohere API and return the client object."""
+
+    COHERE_API_KEY = os.getenv('COHERE_API_KEY')
+
+    try:
+        cohere_client = cohere.Client(COHERE_API_KEY)
+        print("[COHERE SUCCESS] Connected to the Cohere API successfully.")
+        return cohere_client
+
+    except Exception as e:
+        print(f"[COHERE ERROR] Failed to connect to the Cohere API. Reason: {e}")
+        return None
 
 
 def pre_proccess_messages(unread_messages:list[str]) ->  tuple[str,int]:
@@ -48,7 +60,7 @@ Original Text Length: {text_length}
 Requirements:
 
 1. Clarity and Accuracy: Maintain the core meaning and key information of the original messages.
-2. Length Constraint: Ensure the summary length is approximately 13% of the original text length.
+2. Length Constraint: Ensure the summary length is approximately 14% of the original text length.
 3. Readability: Structure the summary into sections if it improves clarity or flow.
 4. Exclusions: Do not include references to videos or images that are not provided in the text.
 
@@ -60,6 +72,9 @@ Output:
 def send_to_llm(prompt:str) -> str:
     """Send the prompt to the LLM model and return the summary"""
 
+    cohere_client = connect_to_cohere_llm()
+    if not cohere_client:
+        return None
     try:
         response = cohere_client.generate(
             model="command-r-plus", 
@@ -75,18 +90,18 @@ def send_to_llm(prompt:str) -> str:
         return None
 
 
-def summarize_messages(group_name:str, processed_text:str, text_length:int):
+def summarize_messages(chat_name:str, processed_text:str, text_length:int):
     prompt = generate_prompt_for_llm(processed_text,text_length)
     summary = send_to_llm(prompt)
     if summary:
-        return group_name + '\n' + summary
+        return chat_name + '\n' + summary
     else:  
         return None
 
 
-def summarize_group(group_name:str, unread_messages:list) ->str:
+def summarize_chat(chat_name:str, unread_messages:list) ->str:
     unread_messages = unread_messages[::-1]
     proccessed_text,text_length = pre_proccess_messages(unread_messages)
-    summary = summarize_messages(group_name, proccessed_text,text_length)
+    summary = summarize_messages(chat_name, proccessed_text,text_length)
     return summary
         

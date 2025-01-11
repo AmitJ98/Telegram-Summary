@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 from database_management.users_data_table import insert_new_user, fetch_user_data, delete_user, update_chat_list, update_time
 from database_management.users_data_table import check_user_existence
-from user_bot import scan_chats_for_summarization
+from user_bot import scan_chats
 
 
 load_dotenv()
@@ -143,7 +143,7 @@ async def register_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 ###############################work on this function############################################
 async def scan_chats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
-    valid_groups = await scan_chats_for_summarization(user_id)
+    valid_groups = await scan_chats(user_id)
 
     if not valid_groups:
         await update.message.reply_text("No valid chats found to scan.")
@@ -153,7 +153,7 @@ async def scan_chats_command(update: Update, context: ContextTypes.DEFAULT_TYPE)
     # Create buttons for each group
     keyboard = [
         [InlineKeyboardButton(group, callback_data=f"select_{group}")]
-        for group in valid_groups
+        for group,_ in valid_groups
     ]
     keyboard.append([InlineKeyboardButton("Confirm Selection", callback_data="confirm_selection")])
 

@@ -10,7 +10,7 @@ load_dotenv()
 
 """need check if all the functions need to be async or not"""
 
-#need to change it to global time timestamp and add typing of timestamp
+# TODO need to change it to global time timestamp and add typing of timestamp
 def connect_to_db():
     """Connect to the database and return the connection object."""
     try:

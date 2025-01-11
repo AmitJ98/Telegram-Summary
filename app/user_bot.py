@@ -4,11 +4,11 @@ from database_management.users_data_table import fetch_user_data
 import json
 import re
 import os
+from summarizer import summarize_chat
 
-session_folder = "sessions"
+
 ####################   TESTING  ###############################################
 ################################################################################
-GROUP_NAME = "Abu Ali Express in English"
 
 def save_messages_to_json_for_testing(messages, file_name):
     """Save messages to a JSON file for testing or debugging."""
@@ -51,7 +51,7 @@ def create_user_bot(user_id:int) -> Client:
         return None
 
 
-def check_valid_chat_name_for_summarization(group_name:str) -> bool:
+def check_valid_chat_name(group_name:str) -> bool:
     """Check if the group name is valid for summarization.
         Matches only English letters (uppercase and lowercase), digits, and common symbols."""
 
@@ -59,7 +59,7 @@ def check_valid_chat_name_for_summarization(group_name:str) -> bool:
     return bool(re.match(pattern, group_name))
 
 
-async def scan_chats_for_summarization(user_id: int) -> list[str]:
+async def scan_chats(user_id: int) -> list[tuple[str, int]]:
     """Scan all chats/groups of the user and return only those with valid names."""
 
     user_bot = create_user_bot(user_id)
@@ -70,10 +70,9 @@ async def scan_chats_for_summarization(user_id: int) -> list[str]:
     try:
         await user_bot.start()  
         async for dialog in user_bot.get_dialogs():
-            if dialog.chat.title and check_valid_chat_name_for_summarization(dialog.chat.title):
-                valid_chats.append(dialog.chat.title)
+            if dialog.chat.title and check_valid_chat_name(dialog.chat.title):
+                valid_chats.append((dialog.chat.title, dialog.chat.id))
         
-        print(valid_chats)
         return valid_chats
 
     except Exception as e:
@@ -84,35 +83,83 @@ async def scan_chats_for_summarization(user_id: int) -> list[str]:
         await user_bot.stop() 
 
 
-def fetch_unread_messages_from_chat(bot:Client, group_name:str):
-    """Fetch unread messages from a specific group."""
-
-    target_dialog = None
-    for dialog in bot.get_dialogs():
-        if dialog.chat.title == group_name:
-            target_dialog = dialog
-            break
-
-    if not target_dialog:
-        print(f"Could not find the group '{group_name}'.")
-        return None, None
-
-    dialog_id = target_dialog.chat.id
-    unread_count = target_dialog.unread_messages_count
-    print(f"Fetching unread messages from '{group_name}' (Unread Count: {unread_count}) ---->")
+async def fetch_unread_messages_from_spesific_chat(user_bot: Client, chat_id: int, unread_count: int) -> list: #list of messages
+    """Fetch unread messages from a specific chat."""
 
     unread_messages = []
-    if unread_count != 0:
-        for message in bot.get_chat_history(dialog_id, limit=unread_count):
+    try:
+        async for message in user_bot.get_chat_history(chat_id, limit=unread_count):
             if not message.caption and not message.text:
                 continue
-            unread_messages.append(message)
+            unread_messages.append(message) 
+        await user_bot.read_chat_history(chat_id)
 
-        # bot.read_chat_history(dialog_id) # need to add option for mark or no
-        # print(f"Marked all messages as read in '{group_name}'.") 
-    else:
-        print(f"No unread messages in '{group_name}'.")
+    except Exception as e:
+        print(f"[USER BOT ERROR] Failed to fetch messages from chat ID {chat_id}. Reason: {e}")
 
-    return dialog_id, unread_messages    
+    return unread_messages
 
 
+async def fetch_messages_from_all_chats(user_bot: Client, chats_list: list[tuple[str, int]]) -> list[tuple[str,list,bool]]:
+    """Fetch messages from all chats and groups that the user selected."""
+    
+    unread_list = []
+
+    for chat_name, chat_id in chats_list:
+        try:
+            chat = await user_bot.get_chat(chat_id)  
+            unread_count = chat.unread_messages
+
+            if unread_count == 0:
+                unread_list.append((chat_name, [f"{chat_name}\nNo unread messages found in the chat."], False))
+                continue
+            else:
+                unread_messages = await fetch_unread_messages_from_spesific_chat(user_bot, chat_id, unread_count)
+                unread_list.append((chat_name, unread_messages,True))
+
+        except Exception as e:
+            print(f"[USER BOT ERROR] Failed to fetch messages from chat: {chat_name} (ID: {chat_id}). Reason: {e}")
+            unread_list.append((chat_name, [f"{chat_name}\nError fetching messages."], False))
+
+    return unread_list
+
+
+async def summarize_all_chats(user_id: int) -> list[str]:
+    """
+    Fetch unread messages from selected chats and summarize them.
+
+    Args:
+        user_id (int): The user ID for which chats need to be summarized.
+    Returns:
+        list[str]: A list of summaries for the selected chats.
+    """
+
+    user_bot = create_user_bot(user_id)
+
+    try:
+        await user_bot.start()
+        chats_list = []   # Replace this placeholder with a database call or user input fetching chats_list
+        
+        summaries = [] 
+        unread_list = await fetch_messages_from_all_chats(user_bot, chats_list)
+
+        for chat_name, unread_messages, summary_bool in unread_list:
+            if summary_bool:
+                try:
+                    summary = summarize_chat(chat_name, unread_messages) 
+                    if summary:
+                        summaries.append(summary)
+                except Exception as e:
+                    print(f"USER BOT ERROR] Failed to summarize chat: {chat_name}. Reason: {e}")
+            
+            else:
+                summaries.append(f"{chat_name}\nNo messages to summarize.")
+
+        return summaries
+
+    except Exception as e:
+        print(f"[USER BOT ERROR] Failed to process chats for user ID {user_id}. Reason: {e}")
+        return []
+    
+    finally:
+        await user_bot.stop()  

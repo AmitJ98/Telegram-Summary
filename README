@@ -8,6 +8,7 @@ To Do:
 
 
     Summarizer:
+        - change the last 3 functions to async function
         - clean the data, in a broad way and not spesific
         - tune prompt
 
@@ -17,7 +18,8 @@ To Do:
     Other:
         - build the scedular that will activate the summarizer bot
         - decide on which services to use in aws
-        - mybe need to build a warper server that will handle the schedule and the interface bot
+        - maybe need to build a warper server that will handle the schedule and the interface bot
+        
         - wirte tests
         - logs, monitor, and dashbord
 
