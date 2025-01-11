@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 
 INVISIBLE_CHARS = r'[\u200b-\u200d\n\r\t]'
-SUMMARY_LENGTH = 0.13 # should be 10 - 25% of the original text
+SUMMARY_LENGTH = 0.14 # should be 10 - 25% of the original text
 
 load_dotenv()
 

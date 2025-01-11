@@ -34,14 +34,14 @@ def connect_to_db():
         return None
 
 
-def insert_new_user(id: int, api_key: str, api_hash: str, chats_to_summarize: list[str], time_to_summarize=None):
+def insert_new_user(user_id: int, api_key: str, api_hash: str, chats_to_summarize: list[str], time_to_summarize=None):
     """Insert a new user into the database, into the users table.
        Return True if the user was inserted successfully, False otherwise."""
     
     connection_to_database = connect_to_db()
     if connection_to_database is None:
         return False
-    id = str(id)
+    user_id = str(user_id)
     query = """
     INSERT INTO users_data (user_id, api_id, api_hash, chats_to_summarize, time_to_summarize)
     VALUES (%s, %s, %s, %s, %s);
@@ -50,16 +50,16 @@ def insert_new_user(id: int, api_key: str, api_hash: str, chats_to_summarize: li
         encrypt_api_key = encrypt_data(api_key)
         encrypt_api_hash = encrypt_data(api_hash)
         cursor = connection_to_database.cursor()
-        cursor.execute(query, (id, encrypt_api_key, encrypt_api_hash, chats_to_summarize, time_to_summarize))
+        cursor.execute(query, (user_id, encrypt_api_key, encrypt_api_hash, chats_to_summarize, time_to_summarize))
         connection_to_database.commit()
         print(f"[DATABASE SUCCESS] New user inserted successfully! Details:\n"
-              f"  ID: {id}\n"
+              f"  ID: {user_id}\n"
               f"  Chats: {chats_to_summarize}\n"
               f"  Timestamp: {time_to_summarize if time_to_summarize else 'Default (NOW())'}")
         return True
     
     except Exception as e:
-        print(f"[DATABASE ERROR] Failed to insert user ID {id}. Reason: {e}")
+        print(f"[DATABASE ERROR] Failed to insert user ID {user_id}. Reason: {e}")
         connection_to_database.rollback()
         return False
     
@@ -67,7 +67,7 @@ def insert_new_user(id: int, api_key: str, api_hash: str, chats_to_summarize: li
         connection_to_database.close()
 
 
-def fetch_user_data(id: int) -> dict:
+def fetch_user_data(user_id: int) -> dict:
     """Fetch a user from the database, decrypt api_id and api_hash, and return the user.
        Returns None if the user was not found or an error occurred."""
     
@@ -80,14 +80,13 @@ def fetch_user_data(id: int) -> dict:
     FROM users_data
     WHERE user_id = %s;
     """
-    id = str(id)
+    user_id = str(user_id)
     try:
         cursor = connection_to_database.cursor()
-        cursor.execute(query, (id,))
+        cursor.execute(query, (user_id,))
         user = cursor.fetchone()
         
         if user:
-
             decrypted_api_id = decrypt_data(bytes(user[1]))  
             decrypted_api_hash = decrypt_data(bytes(user[2]))  
  
@@ -104,116 +103,18 @@ def fetch_user_data(id: int) -> dict:
             return decrypted_user
         
         else:
-            print(f"[DATABASE INFO] No user found with ID: {id}.")
+            print(f"[DATABASE INFO] No user found with ID: {user_id}.")
             return None
         
     except Exception as e:
-        print(f"[DATABASE ERROR] Failed to fetch user with ID {id}. Reason: {e}")
+        print(f"[DATABASE ERROR] Failed to fetch user with ID {user_id}. Reason: {e}")
         return None
     
     finally:
         connection_to_database.close()
 
 
-def delete_user(id: int):
-    """Delete a user from the database, from the users table.
-       Return True if the user was deleted successfully or if the user is not found, False otherwise."""
-    
-    connection_to_database = connect_to_db()
-    if connection_to_database is None:
-        return False
-    
-    id = str(id)
-    query = """
-    DELETE FROM users_data
-    WHERE user_id = %s;
-    """
-    try:
-        cursor = connection_to_database.cursor()
-        cursor.execute(query, (id,))
-        if cursor.rowcount == 0:  # No rows found
-            print(f"[DATABASE INFO] User ID {id} does not exist. No action taken.")
-        else:
-            print(f"[DATABASE SUCCESS] User ID {id} deleted successfully.")
-        connection_to_database.commit()
-        return True
-    
-    except Exception as e:
-        print(f"[DATABASE ERROR] Failed to delete user ID {id}. Reason: {e}")
-        connection_to_database.rollback()
-        return False
-    
-    finally:
-        connection_to_database.close()
-
-
-def update_chat_list(id: int, new_chats: list[str]):
-    """Update the chat list of a user in the database, in the users table.
-       Return True if the chat list was updated successfully or if the user is not found, False otherwise."""
-    
-    connection_to_database = connect_to_db()
-    if connection_to_database is None:
-        return False
-
-    id = str(id)
-    query = """
-    UPDATE users_data
-    SET chats_to_summarize = %s
-    WHERE user_id = %s;
-    """
-    try:
-        cursor = connection_to_database.cursor()
-        cursor.execute(query, (new_chats, id))
-        if cursor.rowcount == 0:  # No rows found
-            print(f"[DATABASE INFO] User ID {id} does not exist. Chat list update skipped.")
-        else:
-            print(f"[DATABASE SUCCESS] Chat list for user ID {id} updated successfully to: {new_chats}")
-        connection_to_database.commit()
-        return True
-    
-    except Exception as e:
-        print(f"[DATABASE ERROR] Failed to update chat list for user ID {id}. Reason: {e}")
-        connection_to_database.rollback()
-        return False
-    
-    finally:
-        connection_to_database.close()
-
-
-def update_time(id: int, new_time):
-    """Update the time of a user in the database, in the users table.
-       Return True if the time was updated successfully or if the user is not found, False otherwise."""
-    
-    connection_to_database = connect_to_db()
-    if connection_to_database is None:
-        return False
-
-    id = str(id)
-    query = """
-    UPDATE users_data
-    SET time_to_summarize = %s
-    WHERE user_id = %s;
-    """
-    try:
-        cursor = connection_to_database.cursor()
-        cursor.execute(query, (new_time, id))
-        if cursor.rowcount == 0:  # No rows found
-            print(f"[DATABASE INFO] User ID {id} does not exist. Time update skipped.")
-        else:
-            print(f"[DATABASE SUCCESS] Time for user ID {id} updated successfully to: {new_time}")
-        connection_to_database.commit()
-        return True
-    
-    except Exception as e:
-        print(f"[DATABASE ERROR] Failed to update time for user ID {id}. Reason: {e}")
-        connection_to_database.rollback()
-        return False
-    
-    finally:
-        connection_to_database.close()
-
-
-def check_user_existence(id: int):
+def check_user_existence(user_id: int):
     """Check if a user exists in the database.
        Return True if the user exists, False otherwise."""
     
@@ -221,7 +122,7 @@ def check_user_existence(id: int):
     if connection_to_database is None:
         return False
 
-    id = str(id)
+    user_id = str(user_id)
     query = """
     SELECT user_id
     FROM users_data
@@ -229,20 +130,159 @@ def check_user_existence(id: int):
     """
     try:
         cursor = connection_to_database.cursor()
-        cursor.execute(query, (id,))
+        cursor.execute(query, (user_id,))
         user = cursor.fetchone()
         if user:
-            print(f"[DATABASE INFO] User ID {id} exists in the database.")
+            print(f"[DATABASE INFO] User ID {user_id} exists in the database.")
             return True
         else:
-            print(f"[DATABASE INFO] User ID {id} does not exist in the database.")
+            print(f"[DATABASE INFO] User ID {user_id} does not exist in the database.")
             return False
         
     except Exception as e:
-        print(f"[DATABASE ERROR] Failed to check user existence for ID {id}. Reason: {e}")
+        print(f"[DATABASE ERROR] Failed to check user existence for ID {user_id}. Reason: {e}")
         return False
     
     finally:
         connection_to_database.close()
+
+
+def delete_user(user_id: int):
+    """Delete a user from the database, from the users table.
+       Return True if the user was deleted successfully or if the user is not found, False otherwise."""
+    
+    connection_to_database = connect_to_db()
+    if connection_to_database is None:
+        return False
+    
+    user_id = str(user_id)
+    query = """
+    DELETE FROM users_data
+    WHERE user_id = %s;
+    """
+    try:
+        cursor = connection_to_database.cursor()
+        cursor.execute(query, (user_id,))
+        if cursor.rowcount == 0:  # No rows found
+            print(f"[DATABASE INFO] User ID {user_id} does not exist. No action taken.")
+        else:
+            print(f"[DATABASE SUCCESS] User ID {user_id} deleted successfully.")
+        connection_to_database.commit()
+        return True
+    
+    except Exception as e:
+        print(f"[DATABASE ERROR] Failed to delete user ID {user_id}. Reason: {e}")
+        connection_to_database.rollback()
+        return False
+    
+    finally:
+        connection_to_database.close()
+
+
+def set_user_chat_list(user_id: int, new_chats: list[tuple[str,int]]):
+    """Update the chat for summary list of a user in the database, in the users table.
+       Return True if the chat list was updated successfully, False otherwise."""
+    
+    connection_to_database = connect_to_db()
+    if connection_to_database is None:
+        return False
+
+    user_id = str(user_id)
+    query = """
+    UPDATE users_data
+    SET chats_to_summarize = %s
+    WHERE user_id = %s;
+    """
+    try:
+        cursor = connection_to_database.cursor()
+        cursor.execute(query, (new_chats, user_id))
+        if cursor.rowcount == 0:  # No rows found
+            print(f"[DATABASE INFO] User ID {user_id} does not exist. Chat list update skipped.")
+            return False
+        else:
+            print(f"[DATABASE SUCCESS] Chat list for user ID {user_id} updated successfully to: {new_chats}")
+            connection_to_database.commit()
+            return True
+    
+    except Exception as e:
+        print(f"[DATABASE ERROR] Failed to update chat list for user ID {user_id}. Reason: {e}")
+        connection_to_database.rollback()
+        return False
+    
+    finally:
+        connection_to_database.close()
+
+
+def get_user_chat_list(user_id: int) -> list[tuple[str,int]]:
+    """return the chat for summary list of the user.
+       Return Object if the chat list was fetched successfully or None otherwise."""
+    
+    connection_to_database = connect_to_db()
+    if connection_to_database is None:
+        return False
+
+    user_id = str(user_id)
+    query = """
+    SELECT Chats_To_Summarize
+    FROM users_data
+    WHERE user_id = %s; 
+    """
+    
+    try:
+        cursor = connection_to_database.cursor()
+        cursor.execute(query, (user_id))
+        chats_to_summarize = cursor.fetchone()
+
+        if chats_to_summarize:
+            print(f"[DATABASE SUCCESS] Chat list for user ID {user_id} fetched successfully" )
+            return chats_to_summarize
+        else:
+            print(f"[DATABASE INFO] User ID {user_id} does not exist. Chat list fetching skipped.")
+            return None
+    
+    except Exception as e:
+        print(f"[DATABASE ERROR] Failed to fetch Chat list for user ID {user_id}. Reason: {e}")
+        return None
+    
+    finally:
+        connection_to_database.close()
+
+
+def set_user_time(user_id: int, new_time):
+    """Update the time of a user summary in the database, in the users table.
+       Return True if the time was updated successfully, False otherwise."""
+    
+    connection_to_database = connect_to_db()
+    if connection_to_database is None:
+        return False
+
+    user_id = str(user_id)
+    query = """
+    UPDATE users_data
+    SET time_to_summarize = %s
+    WHERE user_id = %s;
+    """
+    try:
+        cursor = connection_to_database.cursor()
+        cursor.execute(query, (new_time, user_id))
+        if cursor.rowcount == 0:  # No rows found
+            print(f"[DATABASE INFO] User ID {user_id} does not exist. Time update skipped.")
+            return False
+        else:
+            print(f"[DATABASE SUCCESS] Time for user ID {user_id} updated successfully to: {new_time}")
+            connection_to_database.commit()
+            return True
+    
+    except Exception as e:
+        print(f"[DATABASE ERROR] Failed to update time for user ID {user_id}. Reason: {e}")
+        connection_to_database.rollback()
+        return False
+    
+    finally:
+        connection_to_database.close()
+
+
+def get_user_time(id: int):
+    pass
 
 

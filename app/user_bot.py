@@ -5,6 +5,7 @@ import json
 import re
 import os
 from summarizer import summarize_chat
+from database_management.users_data_table import get_user_chat_list
 
 
 ####################   TESTING  ###############################################
@@ -138,24 +139,28 @@ async def summarize_all_chats(user_id: int) -> list[str]:
 
     try:
         await user_bot.start()
-        chats_list = []   # Replace this placeholder with a database call or user input fetching chats_list
-        
-        summaries = [] 
-        unread_list = await fetch_messages_from_all_chats(user_bot, chats_list)
+        chats_list = get_user_chat_list(user_id)
+        if chats_list:
+            summaries = [] 
+            unread_list = await fetch_messages_from_all_chats(user_bot, chats_list)
 
-        for chat_name, unread_messages, summary_bool in unread_list:
-            if summary_bool:
-                try:
-                    summary = summarize_chat(chat_name, unread_messages) 
-                    if summary:
-                        summaries.append(summary)
-                except Exception as e:
-                    print(f"USER BOT ERROR] Failed to summarize chat: {chat_name}. Reason: {e}")
-            
-            else:
-                summaries.append(f"{chat_name}\nNo messages to summarize.")
+            for chat_name, unread_messages, summary_bool in unread_list:
+                if summary_bool:
+                    try:
+                        summary = summarize_chat(chat_name, unread_messages) 
+                        if summary:
+                            summaries.append(summary)
+                    except Exception as e:
+                        print(f"USER BOT ERROR] Failed to summarize chat: {chat_name}. Reason: {e}")
+                
+                else:
+                    summaries.append(f"{chat_name}\nNo messages to summarize.")
 
-        return summaries
+            return summaries
+
+        else:
+            print(f"[USER BOT INFO] Didnt found chats for user ID {user_id}.")
+            return []
 
     except Exception as e:
         print(f"[USER BOT ERROR] Failed to process chats for user ID {user_id}. Reason: {e}")
