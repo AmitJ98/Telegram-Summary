@@ -1,18 +1,26 @@
 To Do:
+    imporatant:
+        1.Summarizer: - change the last 3 functions to async function
+        2. DataBase: - set time function
+        3. test the current project 
+        4. interface 
+        5. secudaler
+        6. deploy to aws
+
 ====================================================================================================
     InterFace Bot:
         - make it more user friendly
 
     User Bot:
-        - connect to the database
 
 
     Summarizer:
         - change the last 3 functions to async function
         - clean the data, in a broad way and not spesific
-        - tune prompt
+        - tune prompt (tokenize the text to adjust the output length)
 
     Data Base:
+        - make all the function better (set time)
         
         
     Other:
