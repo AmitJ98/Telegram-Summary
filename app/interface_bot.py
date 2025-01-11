@@ -3,7 +3,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 import os
 from dotenv import load_dotenv
-from database_management.users_data_table import insert_new_user, fetch_user_data, delete_user, update_chat_list, update_time
+from database_management.users_data_table import insert_new_user, fetch_user_data, delete_user,set_user_chat_list, set_user_time
 from database_management.users_data_table import check_user_existence
 from user_bot import scan_chats
 
@@ -75,14 +75,14 @@ async def handle_api_key_and_hash(update: Update, context: ContextTypes.DEFAULT_
     
     message_text = update.message.text
     splited_message = message_text.split(", ")
-    print(update.message.from_user.id,print(type(update.message.from_user.id)))
+
     if len(splited_message) != 2:
         await update.message.reply_text("Invalid input. Please follow the format and try again.")
         return
 
     api_id, api_hash = splited_message
     user_info = await verify_api_key_and_hash(api_id, api_hash, update.message.from_user.id)
-    print(user_info.id,type(user_info.id))
+
     if user_info:
         is_inserted = insert_new_user(user_info.id, api_id, api_hash, [])
         if is_inserted:
